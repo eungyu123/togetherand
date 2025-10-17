@@ -1,0 +1,48 @@
+name: Database Backup
+
+on:
+  schedule:
+    # 매일 오전 2시에 실행
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create database backup
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # 프로젝트 디렉토리로 이동
+            cd ~/nestjs-app
+
+            # 백업 파일명 생성
+            BACKUP_FILE="backup_$(date +%Y%m%d_%H%M%S).sql"
+            echo "📦 백업 파일 생성: $BACKUP_FILE"
+
+            # 데이터베이스 백업
+            docker-compose -f docker-compose.yml exec -T postgres pg_dump -U nestjs_user nestjs_db_prod > $BACKUP_FILE
+
+            # 백업 파일 압축
+            gzip $BACKUP_FILE
+
+            # 백업 파일 크기 확인
+            echo "📊 백업 파일 정보:"
+            ls -lh ${BACKUP_FILE}.gz
+
+            # 오래된 백업 파일 삭제 (7일 이상)
+            find . -name "backup_*.sql.gz" -mtime +7 -delete
+
+            echo "✅ 백업 완료: ${BACKUP_FILE}.gz"
+
+      - name: Upload to S3 (Optional)
+        if: env.AWS_ACCESS_KEY_ID != ''
+        run: |
+          echo "☁️ S3 업로드는 AWS 자격 증명이 설정된 경우에만 실행됩니다"
+          # AWS CLI를 사용한 S3 업로드 로직은 필요시 추가

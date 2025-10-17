@@ -1,0 +1,83 @@
+@import 'tailwindcss';
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme {
+  --color-main-black-900: #141315;
+  --color-main-black-800: #2e2c30;
+  --color-main-black-750: #555355;
+  --color-main-black-700: #1c1a1e;
+  --color-main-black-600: #211f23;
+  --color-main-black-500: #232024;
+  --color-main-black-400: #211f23;
+  --color-main-black-300: #666666;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed !important;
+  }
+}
+
+/* 특정 클래스에만 적용 */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Edge */
+}
+
+/* 볼륨 슬라이더 스타일 */
+.volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 사용자가 말하고 있을 때의 스타일 */
+.user-card.speaking {
+  border: 2px solid var(--speaking-border);
+  box-shadow: var(--speaking-shadow);
+}

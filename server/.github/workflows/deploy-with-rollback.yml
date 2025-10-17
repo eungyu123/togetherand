@@ -1,0 +1,77 @@
+name: Deploy with Rollback
+
+on:
+  workflow_dispatch: # 수동 실행만 가능
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # 프로젝트 디렉토리로 이동
+            cd ~/nestjs-app
+
+            # 현재 커밋 해시 저장 (롤백용)
+            CURRENT_COMMIT=$(git rev-parse HEAD)
+            echo "현재 커밋: $CURRENT_COMMIT"
+
+            # Git pull로 최신 코드 가져오기
+            git pull origin main
+            NEW_COMMIT=$(git rev-parse HEAD)
+            echo "새 커밋: $NEW_COMMIT"
+
+            # 이전 이미지 백업 (롤백용)
+            docker tag nestjs-app_app:latest nestjs-app_app:backup-$(date +%Y%m%d_%H%M%S) || true
+
+            # Docker 컨테이너 중지
+            docker-compose -f docker-compose.yml down -v
+
+            # 새로운 이미지 빌드
+            docker-compose -f docker-compose.yml build --no-cache
+
+            # 컨테이너 실행
+            docker-compose -f docker-compose.yml up -d
+
+            # 마이그레이션 실행
+            docker-compose -f docker-compose.yml exec -T app npm run migration:run
+
+            # Nginx 재시작
+            sudo systemctl restart nginx
+
+            # 배포 완료 확인
+            echo "✅ 배포 완료!"
+            echo "📊 컨테이너 상태:"
+            docker-compose -f docker-compose.yml ps
+
+            # 헬스체크 (3회 시도)
+            for i in {1..3}; do
+              echo "헬스체크 시도 $i/3..."
+              if curl -f https://api.togetherand.site/health; then
+                echo "✅ 헬스체크 성공!"
+                break
+              else
+                echo "❌ 헬스체크 실패 ($i/3)"
+                if [ $i -eq 3 ]; then
+                  echo "🚨 배포 실패 - 롤백 시작..."
+                  # 롤백 로직
+                  docker-compose -f docker-compose.yml down
+                  docker tag nestjs-app_app:backup-$(date +%Y%m%d_%H%M%S) nestjs-app_app:latest || true
+                  docker-compose -f docker-compose.yml up -d
+                  sudo systemctl restart nginx
+                  echo "🔄 롤백 완료"
+                  exit 1
+                fi
+                sleep 10
+              fi
+            done

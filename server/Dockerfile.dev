@@ -1,0 +1,38 @@
+# ===========================================
+# Development Dockerfile (개발용 도커파일)
+# ===========================================
+# Node.js 20 버전의 경량 Alpine 리눅스 이미지 사용 (개발용)
+FROM node:20-alpine
+
+# 컨테이너 내 작업 디렉토리 생성 및 이동
+WORKDIR /app
+
+# 네이티브 모듈 빌드를 위한 빌드 도구 및 pip 설치
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    make \
+    g++ \
+    linux-headers \
+    && rm -rf /var/cache/apk/*
+
+# 패키지 매니저 관련 파일 복사
+COPY package.json ./
+COPY package-lock.json ./
+
+# 의존성 설치 (개발/프로덕션 모두)
+RUN npm ci
+
+# 소스 코드 전체 복사
+# 볼륨 마운트로 로컬 개발 사항이 도커 컨테이너에 즉시 반영하려면  
+# COPY . .
+
+# 환경 변수 설정
+ENV NODE_ENV=development
+ENV PORT=3000
+
+# 포트 노출
+EXPOSE 3000 9229
+
+# 개발 서버 실행 (핫 리로드) start:dev 는 파일 변경시 자동 서버 재시작
+CMD ["npm", "run", "start:dev"] 

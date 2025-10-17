@@ -1,0 +1,30 @@
+{
+  "entryPoints": ["src/**/*.ts"],
+  "entryPointStrategy": "expand",
+  "out": "docs",
+  "exclude": ["**/*.spec.ts", "**/*.test.ts", "**/node_modules/**"],
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  "includeVersion": true,
+  "theme": "default",
+  "name": "Make Friend Backend API Documentation",
+  "readme": "README.md",
+  "categorizeByGroup": true,
+  "categoryOrder": ["WebSocket Gateway", "Controllers", "Services", "Entities", "DTOs", "Guards", "Utilities", "*"],
+  "defaultCategory": "Other",
+  "plugin": [],
+  "hideGenerator": true,
+  "sort": ["source-order"],
+  "visibilityFilters": {
+    "protected": false,
+    "private": false,
+    "inherited": true,
+    "external": false
+  },
+  "searchInComments": true,
+  "validation": {
+    "invalidLink": true,
+    "notExported": true
+  }
+}

@@ -1,0 +1,110 @@
+services:
+  # ===========================================
+  # NestJS Application
+  # ===========================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # target: production
+    container_name: nestjs-app
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+    ports:
+      - '3000:3000'
+      - '40000-40100:40000-40100/udp'
+      - '40000-40100:40000-40100/tcp'
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - nestjs-network
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ===========================================
+  # PostgreSQL Database
+  # ===========================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: nestjs-postgres
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${DATABASE_NAME}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nestjs-network
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================
+  # Redis Cache
+  # ===========================================
+  redis:
+    image: redis:7-alpine
+    container_name: nestjs-redis
+    env_file:
+      - .env
+    # Redis 서버 시작 옵션:
+    # --appendonly yes: AOF(Append Only File) 활성화 (데이터 영속성)
+    # --requirepass: Redis 비밀번호 설정
+    # --notify-keyspace-events Ex: Keyspace Notifications 활성화
+    #   - E: Keyevent 이벤트 (키 이름 포함)
+    #   - x: 만료 이벤트 (TTL 만료 시 이벤트 발송)
+    #   → 통화 요청 타임아웃 시 자동으로 프론트엔드에 알림 전송
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD} --notify-keyspace-events Ex
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - nestjs-network
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD}', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+# ===========================================
+# Volumes
+# ===========================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ===========================================
+# Networks
+# ===========================================
+networks:
+  nestjs-network:
+    driver: bridge

@@ -1,0 +1,13 @@
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin-slow {
+  animation: spin-slow 2s linear infinite;
+}
+
+.spin-slowest {
+  animation: spin-slow 3s linear infinite;
+}

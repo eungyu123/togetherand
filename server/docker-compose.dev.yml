@@ -1,0 +1,130 @@
+services:
+  # ===========================================
+  # NestJS Application (Development)
+  # ===========================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: nestjs-app-dev
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+    ports:
+      - '3000:3000'
+      - '9229:9229' # Node.js debugger ?
+      - '40000-40100:40000-40100/udp'
+      - '40000-40100:40000-40100/tcp'
+    env_file:
+      - .env.dev
+    volumes:
+      - .:/app # 로컬 소스코드와 컨테이너 연결
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - nestjs-network-dev
+    restart: unless-stopped
+    command: npm run start:dev
+
+  # ===========================================
+  # PostgreSQL Database (Development)
+  # ===========================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: nestjs-postgres-dev
+    environment:
+      - POSTGRES_DB=nestjs_db_dev
+      - POSTGRES_USER=nestjs_user
+      - POSTGRES_PASSWORD=nestjs_password
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
+    ports:
+      - '5433:5432' # 다른 포트 사용
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    networks:
+      - nestjs-network-dev
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nestjs_user -d nestjs_db_dev']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================
+  # Redis Cache (Development)
+  # ===========================================
+  redis:
+    image: redis:7-alpine
+    container_name: nestjs-redis-dev
+    command: redis-server --appendonly yes --requirepass redis_password
+    ports:
+      - '6380:6379' # 다른 포트 사용
+    volumes:
+      - redis_data_dev:/data
+    networks:
+      - nestjs-network-dev
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', 'redis_password', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ===========================================
+  # pgAdmin (Database Management)
+  # ===========================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: nestjs-pgadmin-dev
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    ports:
+      - '5051:80' # 다른 포트 사용
+    volumes:
+      - pgadmin_data_dev:/var/lib/pgadmin
+    networks:
+      - nestjs-network-dev
+    restart: unless-stopped
+    depends_on:
+      - postgres
+
+  # ===========================================
+  # Redis Commander (Redis Management)
+  # ===========================================
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    platform: linux/amd64
+    container_name: nestjs-redis-commander-dev
+    environment:
+      - REDIS_HOSTS=local:redis:6379:0:redis_password
+    ports:
+      - '8082:8081' # 다른 포트 사용
+    networks:
+      - nestjs-network-dev
+    restart: unless-stopped
+    depends_on:
+      - redis
+
+# ===========================================
+# Volumes
+# ===========================================
+volumes:
+  postgres_data_dev:
+    driver: local
+  redis_data_dev:
+    driver: local
+  pgadmin_data_dev:
+    driver: local
+
+# ===========================================
+# Networks
+# ===========================================
+networks:
+  nestjs-network-dev:
+    driver: bridge

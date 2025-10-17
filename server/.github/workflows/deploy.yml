@@ -1,0 +1,52 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # 프로젝트 디렉토리로 이동
+            cd ~/nestjs-app
+
+            # Git pull로 최신 코드 가져오기
+            git pull origin main
+
+            # Docker 컨테이너 중지
+            docker-compose -f docker-compose.yml down -v
+
+            # 새로운 이미지 빌드
+            docker-compose -f docker-compose.yml build --no-cache
+
+            # 컨테이너 실행
+            docker-compose -f docker-compose.yml up -d
+
+            # 마이그레이션 실행
+            docker-compose -f docker-compose.yml exec -T app npm run migration:run
+
+            # Nginx 재시작 (nginx 설정 파일은 수동으로 업데이트)
+            sudo systemctl restart nginx
+
+            # 배포 완료 확인
+            echo "✅ 배포 완료!"
+            echo "📊 컨테이너 상태:"
+            docker-compose -f docker-compose.yml ps
+
+            # 헬스체크
+            sleep 10
+            curl -f https://api.togetherand.site/health || echo "⚠️ 헬스체크 실패"
