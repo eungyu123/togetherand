@@ -64,12 +64,13 @@ export function AddFriendModal({ isOpen, onClose }: { isOpen: boolean; onClose: 
 
         {/* 검색 결과 */}
         <div className="space-y-3 max-h-64 overflow-y-auto">
-          {isLoading && (
+          {/* 이거 순식간이라서 오히려 보기 안좋음 */}
+          {/* {isLoading && (
             <div className="flex items-center justify-center py-4">
               <Loader2 className="w-5 h-5 animate-spin text-blue-400" />
               <span className="ml-2 text-neutral-400">검색 중...</span>
             </div>
-          )}
+          )} */}
 
           {error && (
             <div className="text-red-400 text-sm text-center py-4">

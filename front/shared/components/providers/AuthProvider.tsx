@@ -36,6 +36,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         return;
       }
 
+      // 이거 바꿔야할거같음 좀 잘못함
       // 로그인 했고 프로필 사진이 없으면 회원정보 입력 페이지로 이동
       if (isAuthenticated && !user?.photoUrl) {
         router.replace('/auth/signup');
@@ -43,6 +44,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         return;
       }
 
+      // 로그인 했고 유저 정보가 있으면 페이지 이동 없이 로딩 종료
       if (isAuthenticated && user) {
         setIsLoading(false);
         return;

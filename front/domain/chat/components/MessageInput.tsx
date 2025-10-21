@@ -1,15 +1,32 @@
+import { useMatchContext } from '@/domain/match/components/MatchProvider';
+import { useSocket } from '@/shared/components/providers/SocketProvider';
 import { Send } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useChatRoom } from '../hooks/useChatRoom';
 
-interface MessageInputProps {
-  messageInput: string;
-  setMessageInput: (value: string) => void;
-  onSendMessage: () => void;
-}
+export function MessageInput({
+  roomId,
+  socketType,
+}: {
+  roomId?: string;
+  socketType: 'match' | 'chat';
+}) {
+  const { chatSocket, matchSocket } = useSocket();
+  const { handleSendMessage: handleSendMatchMessage } = useMatchContext();
+  const { handleSendMessage: handleSendChatMessage } = useChatRoom(roomId || '');
 
-export function MessageInput({ messageInput, setMessageInput, onSendMessage }: MessageInputProps) {
+  const [messageInput, setMessageInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const [isComposing, setIsComposing] = useState(false);
+
+  const onSendMessage = () => {
+    if (socketType === 'match') {
+      handleSendMatchMessage(messageInput);
+    } else if (socketType === 'chat') {
+      handleSendChatMessage(messageInput);
+    }
+    setMessageInput('');
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !isComposing) {
@@ -18,6 +35,22 @@ export function MessageInput({ messageInput, setMessageInput, onSendMessage }: M
       onSendMessage();
     }
   };
+
+  useEffect(() => {
+    if (socketType === 'chat') {
+      if (messageInput.trim()) {
+        chatSocket?.getSocket?.emit('typing-start', { roomId });
+      } else {
+        chatSocket?.getSocket?.emit('typing-stop', { roomId });
+      }
+    } else if (socketType === 'match') {
+      if (messageInput.trim()) {
+        matchSocket?.getSocket?.emit('match:typing_start', { roomId });
+      } else {
+        matchSocket?.getSocket?.emit('match:typing_stop', { roomId });
+      }
+    }
+  }, [messageInput, chatSocket, roomId]);
 
   return (
     <div className="py-2 px-4 h-fit bg-main-black-800 border-t border-main-black-700 lg:rounded-b-xl">

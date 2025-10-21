@@ -116,7 +116,7 @@ export function useChatActions() {
       queryKey: ['chatRooms'],
       queryFn: async () => {
         const res = await chatApi.getChatRooms();
-        return res.data;
+        return res.data || [];
       },
       refetchInterval: 30000, // 30초마다 자동 새로고침
       staleTime: 10 * 1000, // 10초간 캐시
@@ -129,7 +129,7 @@ export function useChatActions() {
       queryKey: ['roomMembers', roomId],
       queryFn: async () => {
         const res = await chatApi.getRoomMembers(roomId);
-        return res.data;
+        return res.data || [];
       },
       enabled: !!roomId, // roomId가 있을 때만 실행
       refetchInterval: 30000, // 30초마다 자동 새로고침
@@ -143,7 +143,7 @@ export function useChatActions() {
       queryKey: ['roomMessages', roomId, page, limit],
       queryFn: async () => {
         const res = await chatApi.getRoomMessages(roomId, page, limit);
-        return res.data;
+        return res.data || [];
       },
       enabled: !!roomId, // roomId가 있을 때만 실행
       staleTime: 30 * 1000, // 30초간 캐시 (이전 메시지는 자주 변경되지 않음)
@@ -157,7 +157,8 @@ export function useChatActions() {
       queryFn: async () => {
         const res = await chatApi.getRoomUnreadCount();
 
-        return res.data;
+        // undefined 방지를 위해 기본값 설정
+        return res.data || {};
       },
       staleTime: 0, // 캐싱 하지 않음, 매번 새로 요청  그냥 다시 고민해 봐야됨 전부
     });

@@ -54,21 +54,21 @@ export const useMatch = () => {
     };
   }, [matchSocket]);
 
-  // 타이핑 시작
-  const startTyping = useCallback(() => {
-    const { roomId } = useCallStore.getState();
-    if (!roomId || !matchSocket) return;
+  // // 타이핑 시작
+  // const startTyping = useCallback(() => {
+  //   const { roomId } = useCallStore.getState();
+  //   if (!roomId || !matchSocket) return;
 
-    matchSocket.getSocket?.emit('match:typing_start', { roomId });
-  }, [matchSocket]);
+  //   matchSocket.getSocket?.emit('match:typing_start', { roomId });
+  // }, [matchSocket]);
 
-  // 타이핑 종료
-  const stopTyping = useCallback(() => {
-    const { roomId } = useCallStore.getState();
-    if (!roomId || !matchSocket) return;
+  // // 타이핑 종료
+  // const stopTyping = useCallback(() => {
+  //   const { roomId } = useCallStore.getState();
+  //   if (!roomId || !matchSocket) return;
 
-    matchSocket.getSocket?.emit('match:typing_stop', { roomId });
-  }, [matchSocket]);
+  //   matchSocket.getSocket?.emit('match:typing_stop', { roomId });
+  // }, [matchSocket]);
 
   // 메시지 전송
   const handleSendMessage = (newMessage: string) => {
@@ -144,8 +144,6 @@ export const useMatch = () => {
   };
 
   return {
-    startTyping,
-    stopTyping,
     handleSendMessage,
     createMatchRequest,
     cancelMatchRequest,

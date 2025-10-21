@@ -16,14 +16,19 @@ export default function MobileBottomNav() {
       </Link>
 
       {/* 친구 */}
-      <Link
-        href="/friends"
-        className={`flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-main-black-750 transition-colors ${
-          isAuthenticated ? 'opacity-100' : 'opacity-50 cursor-not-allowed'
-        }`}
-      >
-        <Users size={16} className="text-white" />
-      </Link>
+
+      {isAuthenticated ? (
+        <Link
+          href="/friends"
+          className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-main-black-750 transition-colors"
+        >
+          <Users size={16} className="text-white" />
+        </Link>
+      ) : (
+        <div className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-main-black-750 transition-colors opacity-50 select-none">
+          <Users size={16} className="text-white" />
+        </div>
+      )}
 
       {/* 계정 */}
       {isAuthenticated ? (

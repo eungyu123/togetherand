@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { debounce } from '@/shared/utils/debounce';
 import friendsApi from '@/domain/friend/api/friends';
@@ -7,13 +7,17 @@ export function useUserNameSearch() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
-  useEffect(() => {
-    const debouncedSetQuery = debounce((query: string) => {
+  // 콜백 안쓰면 게속 새로운 디바운스 함수 생겨서 모든 검색을 디바운스 초 이후에 실행됨
+  const debouncedSetQuery = useCallback(
+    debounce((query: string) => {
       setDebouncedQuery(query);
-    }, 300);
+    }, 400),
+    []
+  );
 
+  useEffect(() => {
     debouncedSetQuery(searchQuery);
-  }, [searchQuery]);
+  }, [searchQuery, debouncedSetQuery]);
 
   const {
     data: searchResult,

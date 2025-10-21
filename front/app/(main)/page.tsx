@@ -7,8 +7,6 @@ import { useCallControls } from '@/domain/mediasoup/hooks/useCallControls';
 import { useMediaContext } from '@/shared/components/providers/MediaProvider';
 
 export default function Home() {
-  // console.log('🔍 Home 렌더링');
-
   const { isDesktop } = useMediaContext();
 
   const {

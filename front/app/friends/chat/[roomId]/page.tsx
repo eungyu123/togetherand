@@ -2,14 +2,14 @@
 
 import { useParams } from 'next/navigation';
 import { useCallStore } from '@/domain/call/store/call';
-import { MessageList } from './components/MessageList';
-import { MessageInputComponent } from './components/MessageInput';
+import { MessageList } from '../../../../domain/chat/components/MessageListWithFriend';
 import SharedCallScreen from '@/domain/mediasoup/components/SharedCallScreen';
 import { useCallControls } from '@/domain/mediasoup/hooks/useCallControls';
 import { useChatRoom } from '../../../../domain/chat/hooks/useChatRoom';
 import MobileControlButtons from '@/domain/mediasoup/components/MobileControlButtons';
 import { SharedUserScreenList } from '@/domain/mediasoup/components/SharedUserScreenList';
 import { useChatPanelStore } from '@/domain/chat/store/ChatPanel';
+import { MessageInput } from '@/domain/chat/components/MessageInput';
 
 export default function ChatRoomPage() {
   const params = useParams();
@@ -28,15 +28,8 @@ export default function ChatRoomPage() {
   } = useCallControls();
 
   // 채팅 관련 로직을 훅으로 분리
-  const {
-    messages,
-    isTyping,
-    handleSendMessage,
-    loadMoreMessages,
-    isLoadingMore,
-    hasMoreMessages,
-    isInitialLoading,
-  } = useChatRoom(roomId);
+  const { messages, isTyping, loadMoreMessages, isLoadingMore, hasMoreMessages, isInitialLoading } =
+    useChatRoom(roomId);
 
   // 전화 종료
   const onCallEnd = async () => {
@@ -76,7 +69,7 @@ export default function ChatRoomPage() {
         hasMoreMessages={hasMoreMessages}
         isInitialLoading={isInitialLoading}
       />
-      <MessageInputComponent roomId={roomId} onSendMessage={handleSendMessage} />
+      <MessageInput roomId={roomId} socketType="chat" />
       {callState === 'inCall' && isChatRoomChatPanelOpen ? (
         <MobileControlButtons
           isOpenChatPanel={isChatRoomChatPanelOpen}

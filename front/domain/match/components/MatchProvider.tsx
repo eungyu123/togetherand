@@ -4,8 +4,6 @@ import { createContext, useContext, ReactNode } from 'react';
 import { useMatch } from '@/domain/match/hooks/useMatch';
 
 interface MatchContextType {
-  startTyping: () => void;
-  stopTyping: () => void;
   handleSendMessage: (newMessage: string) => void;
   createMatchRequest: (gameType: string) => Promise<void>;
   cancelMatchRequest: (gameType: string) => Promise<void>;
@@ -18,14 +16,11 @@ interface MatchProviderProps {
 }
 
 export function MatchProvider({ children }: MatchProviderProps) {
-  const { startTyping, stopTyping, handleSendMessage, createMatchRequest, cancelMatchRequest } =
-    useMatch();
+  const { handleSendMessage, createMatchRequest, cancelMatchRequest } = useMatch();
 
   return (
     <MatchContext.Provider
       value={{
-        startTyping,
-        stopTyping,
         handleSendMessage,
         createMatchRequest,
         cancelMatchRequest,

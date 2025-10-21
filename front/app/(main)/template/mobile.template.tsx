@@ -1,4 +1,5 @@
-import { ChatPanel, HeaderBar } from '@/app/(main)/components';
+import ChatWrapperWithMatch from '@/domain/chat/components/ChatWrapperWithMatch';
+import HeaderBar from '@/app/(main)/components/HeaderBar';
 import MobileBottomNav from '@/shared/components/navigations/mobile.BottomNav';
 import SharedCallScreen from '@/domain/mediasoup/components/SharedCallScreen';
 import { MainPageProps } from '@/app/(main)/type';
@@ -12,7 +13,7 @@ export default function MobileTemplate({ callControlsProps, chatPanelProps }: Ma
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {chatPanelProps.isMatchChatPanelOpen ? (
-          <ChatPanel />
+          <ChatWrapperWithMatch />
         ) : (
           <SharedCallScreen
             isOpenChatPanel={chatPanelProps.isMatchChatPanelOpen}

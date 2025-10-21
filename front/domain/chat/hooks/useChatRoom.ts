@@ -167,6 +167,5 @@ export const useChatRoom = (roomId: string) => {
     isLoadingMore,
     hasMoreMessages,
     isInitialLoading,
-    // Generator 함수들도 노출 (고급 사용자용)
   };
 };

@@ -1,4 +1,5 @@
-import { ChatPanel, HeaderBar } from '@/app/(main)/components';
+import ChatWrapperWithMatch from '@/domain/chat/components/ChatWrapperWithMatch';
+import HeaderBar from '@/app/(main)/components/HeaderBar';
 import { MainPageProps } from '@/app/(main)/type';
 import SharedCallScreen from '@/domain/mediasoup/components/SharedCallScreen';
 import { SharedUserScreenList } from '@/domain/mediasoup/components/SharedUserScreenList';
@@ -23,7 +24,7 @@ export default function DesktopTemplate({ ...props }: MainPageProps) {
               onCallEnd={props.callControlsProps.mediasoupEnd}
               chatPanelWidth="w-full lg:w-3/4"
             />
-            {props.chatPanelProps.isMatchChatPanelOpen ? <ChatPanel /> : null}
+            {props.chatPanelProps.isMatchChatPanelOpen ? <ChatWrapperWithMatch /> : null}
           </div>
           <SharedUserScreenList />
         </div>
